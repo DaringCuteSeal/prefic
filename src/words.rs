@@ -49,7 +49,7 @@ pub(crate) struct Trie {
 /// Struct representing a node in a Trie (prefix tree)
 #[derive(Default, Debug, PartialEq, Eq)]
 pub(crate) struct TrieNode {
-    /// idk what this is for
+    /// Set to the letter it represents if the node is a leaf node. Set to `None` otherwise.
     pub(crate) letter: Option<char>,
     /// 0 -> 9
     pub(crate) children: [Option<usize>; 10]
