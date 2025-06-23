@@ -4,7 +4,9 @@ use clap::Parser;
 use cli::Args;
 use errors::{AppError, AppResult};
 use matcher::Matcher;
-use words::{get_dict_map, get_dict_reverse_map};
+use words::{get_encoder_dict_map};
+
+use crate::words::{Trie, DICTIONARY};
 
 mod words;
 mod matcher;
@@ -26,9 +28,9 @@ fn main() -> AppResult<()> {
         Err(_) => return Err(AppError::InputError("Failed to convert to string from UTF-8 input".into()))
     };
 
-    let dict = get_dict_map();
-    let reverse_dict = get_dict_reverse_map();
-    let matcher = Matcher::new(&dict, &reverse_dict);
+    let trie = Trie::from_dict(&DICTIONARY);
+    let reverse_dict = get_encoder_dict_map();
+    let matcher = Matcher::new(&trie, &reverse_dict);
 
     let result = match args.command {
         cli::Command::Cipher => matcher.cipher(&input_str),
@@ -40,7 +42,7 @@ fn main() -> AppResult<()> {
         println!("\n{}", result);
     } else {
         // Print the raw result
-        print!("{}", result);
+        println!("{}", result);
     }
 
 

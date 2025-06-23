@@ -1,38 +1,48 @@
 use std::collections::HashMap;
 
-use crate::{errors::{AppError, AppResult}, words::MAXLEN};
+use crate::{errors::{AppError, AppResult}, words::Trie};
 
-// why am i so OOP
+// why am i so OOP patterned™
+// TODO: idk if borrowed fields is a good idea since this Matcher would stand alone anyways
 pub(crate) struct Matcher<'a> {
-    dict: &'a HashMap<u16, char>,
+    /// Prefix tree of the dictionary
+    trie: &'a Trie,
     reverse_dict: &'a HashMap<char, u16>
 }
 
 impl<'a> Matcher<'a> {
-    pub fn new(dict: &'a HashMap<u16, char>, reverse_dict: &'a HashMap<char, u16>) -> Self {
-        Self { dict, reverse_dict }
+    pub fn new(trie: &'a Trie, reverse_dict: &'a HashMap<char, u16>) -> Self {
+        Self { trie, reverse_dict }
     }
     pub fn decipher(&self, input: &str) -> AppResult<String> {
         let mut result = String::new();
-        let len = input.len();
-        let mut i = 0;
-        'a: while i < len {
-            for len in 1..=MAXLEN {
-                if let Ok(key) = &input[i..i+len].parse::<u16>() {
-                    if let Some(c) = self.get_char(*key) {
-                        i += len;
-                        result.push(c);
-                        continue 'a;
-                    }
-                } else {
-                    return Err(AppError::ParseError("Invalid character found!".into()))
-                }
-            }
-            // No match was found
-            return Err(AppError::ParseError("Invalid sequence found!".into()));
-        }
-        Ok(result)
+        let mut idx: usize = 0; // the index of node we're in rn. initially set to the root
+        for c in input.chars() {
+            // convert the character to a digit
+            let n = if let Some(n) = c.to_digit(10) {
+                n as usize
+            } else {
+                return Err(AppError::ParseError("Invalid character found!".into()))
+            };
 
+            // traverse
+            if let Some(i) = self.trie.nodes[idx].children[n] {
+                idx = i
+            } else {
+                // if we're still somehow traversing then there's something seriously wrong going
+                // on with the trie (unlikely) or the user input. It's 99% not our fault so like
+                // just blame the user I guess lol
+                return Err(AppError::ParseError("Invalid sequence found!".into()))
+                
+            }
+            // no children; could be a leaf node
+            if let Some(c) = self.trie.nodes[idx].letter {
+                result.push(c);
+                // reset (go to root again)
+                idx = 0;
+            }
+        };
+        Ok(result)
     }
     
     pub fn cipher(&self, input: &str) -> AppResult<String> {
@@ -48,33 +58,48 @@ impl<'a> Matcher<'a> {
 
     }
 
-    fn get_char(&self, key: u16) -> Option<char> {
-        self.dict.get(&key).copied()
-    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::words::{get_dict_map, get_dict_reverse_map};
+    use crate::words::{get_encoder_dict_map, Trie, DICTIONARY};
     use super::Matcher;
 
     #[test]
     fn check_cipher() {
         let stream = "fuck you";
         let correct = "1218670321965313618";
-        let dict = get_dict_map();
-        let reverse_dict = get_dict_reverse_map();
-        let matcher = Matcher::new(&dict, &reverse_dict);
+        let trie = Trie::from_dict(&DICTIONARY);
+        let reverse_dict = get_encoder_dict_map();
+        let matcher = Matcher::new(&trie, &reverse_dict);
         assert_eq!(matcher.cipher(stream).unwrap(), correct);
+    }
+
+    #[test]
+    fn check_invalid_cipher() {
+        let stream = "*#^&!*#@&@#^*!!^&#!*^!#";
+        let trie = Trie::from_dict(&DICTIONARY);
+        let reverse_dict = get_encoder_dict_map();
+        let matcher = Matcher::new(&trie, &reverse_dict);
+        assert!(matcher.decipher(stream).is_err());
     }
 
     #[test]
     fn check_decipher() {
         let stream = "1218670321965313618";
         let correct = "fuck you";
-        let dict = get_dict_map();
-        let reverse_dict = get_dict_reverse_map();
-        let matcher = Matcher::new(&dict, &reverse_dict);
+        let trie = Trie::from_dict(&DICTIONARY);
+        let reverse_dict = get_encoder_dict_map();
+        let matcher = Matcher::new(&trie, &reverse_dict);
         assert_eq!(matcher.decipher(stream).unwrap(), correct);
+    }
+
+    #[test]
+    fn check_invalid_decipher() {
+        let stream = "99835";
+        let trie = Trie::from_dict(&DICTIONARY);
+        let reverse_dict = get_encoder_dict_map();
+        let matcher = Matcher::new(&trie, &reverse_dict);
+        assert!(matcher.decipher(stream).is_err());
     }
 }
