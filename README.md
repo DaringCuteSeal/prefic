@@ -48,9 +48,6 @@ hello this is some text to encode
 
 
 # Todo
-```
-
-```
 
 - [x] Implement prefix tree-based query
 - [ ] Cache prefix tree to filesystem for faster access
