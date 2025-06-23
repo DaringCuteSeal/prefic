@@ -61,6 +61,8 @@ impl TrieNode {
 }
 
 impl Trie {
+    /// Create a new Trie from a given dictionary (array of tuples of `char` and `u16`, i.e the
+    /// character associated and its code).
     pub(crate) fn from_dict(dict: &[(char, u16)]) -> Self {
         let mut result = Vec::new();
 
@@ -96,7 +98,7 @@ impl Trie {
 }
 
 /// Append a trie leaf to a trie. Creates new nodes when they don't exist.
-/// Note: A leaf is defined as a node without any children.
+/// Note: A leaf is defined as a node without any children. Or, with a letter assigned to it.
 ///
 /// `edges` must be the *sorted* key, e.g 2354. This function will then traverse through edge 0, 2,
 /// 3, 5 (creating new nodes if they don't already exist), and then finally a "4" leaf.

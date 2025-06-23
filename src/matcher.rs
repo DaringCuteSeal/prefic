@@ -4,6 +4,7 @@ use crate::{errors::{AppError, AppResult}, words::Trie};
 
 // why am i so OOP patterned™
 // TODO: idk if borrowed fields is a good idea since this Matcher would stand alone anyways
+/// Cipher and deciphering engine.
 pub(crate) struct Matcher<'a> {
     /// Prefix tree of the dictionary
     trie: &'a Trie,
@@ -11,9 +12,13 @@ pub(crate) struct Matcher<'a> {
 }
 
 impl<'a> Matcher<'a> {
+    /// Create a new instance of this whatever text cipher and deciphering tool. (idk why i named
+    /// it matcher..)
     pub fn new(trie: &'a Trie, reverse_dict: &'a HashMap<char, u16>) -> Self {
         Self { trie, reverse_dict }
     }
+
+    /// Decipher a given string input.
     pub fn decipher(&self, input: &str) -> AppResult<String> {
         let mut result = String::new();
         let mut idx: usize = 0; // the index of node we're in rn. initially set to the root
@@ -35,7 +40,7 @@ impl<'a> Matcher<'a> {
                 return Err(AppError::ParseError("Invalid sequence found!".into()))
                 
             }
-            // no children; could be a leaf node
+            // this is a leaf!
             if let Some(c) = self.trie.nodes[idx].letter {
                 result.push(c);
                 // reset (go to root again)
