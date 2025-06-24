@@ -48,7 +48,7 @@ hello this is some text to encode
 
 
 # Limitations
-- Only numbers as code is supported for now. The biggest possible code is 65536 (unsigned 16-bit integer is used across this app; although this can be changed easily).
+- Only numbers as code is supported for now. The biggest possible code is 65535 (unsigned 16-bit integer is used across this app; although this can be changed easily).
 - Only `a-z`, `?`, `.`, `,`, and `!` are supported. Anything extra can be added pretty easily, though.. But who needs that, right?
 
 # Todo
