@@ -42,7 +42,7 @@ fn main() -> AppResult<()> {
         println!("\n{}", result);
     } else {
         // Print the raw result
-        print!("{}", result);
+        println!("{}", result);
     }
 
 
