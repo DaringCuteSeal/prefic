@@ -1,17 +1,20 @@
-use std::{io::{self, Read, IsTerminal}, process::exit};
+use std::{
+    io::{self, IsTerminal, Read},
+    process::exit,
+};
 
 use clap::Parser;
 use cli::Args;
 use errors::{AppError, AppResult};
 use matcher::Matcher;
-use words::{get_encoder_dict_map};
+use words::get_encoder_dict_map;
 
 use crate::words::{Trie, DICTIONARY};
 
-mod words;
-mod matcher;
-mod errors;
 mod cli;
+mod errors;
+mod matcher;
+mod words;
 
 fn main() -> AppResult<()> {
     let args = Args::parse();
@@ -25,7 +28,11 @@ fn main() -> AppResult<()> {
 
     let input_str = match String::from_utf8(buf) {
         Ok(res) => res,
-        Err(_) => return Err(AppError::InputError("Failed to convert to string from UTF-8 input".into()))
+        Err(_) => {
+            return Err(AppError::InputError(
+                "Failed to convert to string from UTF-8 input".into(),
+            ))
+        }
     };
 
     let trie = Trie::from_dict(&DICTIONARY);
@@ -34,7 +41,7 @@ fn main() -> AppResult<()> {
 
     let result = match args.command {
         cli::Command::Cipher => matcher.cipher(&input_str),
-        cli::Command::Decipher => matcher.decipher(&input_str)
+        cli::Command::Decipher => matcher.decipher(&input_str),
     }?;
 
     if stdin.is_terminal() {
@@ -44,7 +51,6 @@ fn main() -> AppResult<()> {
         // Print the raw result
         println!("{}", result);
     }
-
 
     Ok(())
 }

@@ -11,7 +11,6 @@ impl Debug for AppError {
             Self::ParseError(s) => write!(f, "{}", s),
             Self::InputError(s) => write!(f, "{}", s),
         }
-        
     }
 }
 

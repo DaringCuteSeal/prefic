@@ -34,7 +34,7 @@ pub(crate) static DICTIONARY: [(char, u16); DICT_LEN] = [
     ('w', 3568),
     ('x', 5780),
     ('y', 9653),
-    ('z', 975)
+    ('z', 975),
 ];
 
 #[derive(Default, Debug, PartialEq, Eq)]
@@ -43,7 +43,7 @@ pub(crate) static DICTIONARY: [(char, u16); DICT_LEN] = [
 pub(crate) struct Trie {
     /// Nodes of the trie.
     /// *Big note: the index 0 should be the root which does not contain any letter—only edges.*
-    pub(crate) nodes: Vec<TrieNode>
+    pub(crate) nodes: Vec<TrieNode>,
 }
 
 /// Struct representing a node in a Trie (prefix tree)
@@ -52,12 +52,15 @@ pub(crate) struct TrieNode {
     /// Set to the letter it represents if the node is a leaf node. Set to `None` otherwise.
     pub(crate) letter: Option<char>,
     /// 0 -> 9
-    pub(crate) children: [Option<usize>; 10]
+    pub(crate) children: [Option<usize>; 10],
 }
 
 impl TrieNode {
     pub(crate) fn new(letter: Option<char>) -> Self {
-        Self { letter, ..Default::default() }
+        Self {
+            letter,
+            ..Default::default()
+        }
     }
 }
 
@@ -71,7 +74,6 @@ impl Trie {
 
         // For each dictionary entry, add a new leaf node to the tree.
         for (c, n) in dict {
-
             // get the list of digits
             // TODO: use log10? but this may be faster
             // or even use strings for each of the codes but that may add too much overhead as
@@ -89,13 +91,9 @@ impl Trie {
             digits.reverse();
 
             append_trie_node(&mut result, &digits, *c);
-
-        };
-        Self {
-            nodes: result
         }
+        Self { nodes: result }
     }
-
 }
 
 /// Append a trie leaf to a trie. Creates new nodes when they don't exist.
@@ -106,7 +104,7 @@ impl Trie {
 fn append_trie_node(tree: &mut Vec<TrieNode>, edges: &[u16], c: char) {
     // we use index-based pointers to refer to a single trie node.
     let mut curr_parent: usize = 0;
-    for i in 0..edges.len()-1 {
+    for i in 0..edges.len() - 1 {
         let edge = edges[i] as usize;
 
         // If an edge exists, traverse to it by setting it as our new parent.
@@ -125,14 +123,14 @@ fn append_trie_node(tree: &mut Vec<TrieNode>, edges: &[u16], c: char) {
     }
 
     // curs ed
-    tree[curr_parent].children[edges[edges.len()-1] as usize] = Some(tree.len());
+    tree[curr_parent].children[edges[edges.len() - 1] as usize] = Some(tree.len());
 
     // afinalllly, add the leaf.
     tree.push(TrieNode::new(Some(c)));
 }
 
 /// Get a new hashmap for reverse lookup
-pub fn get_encoder_dict_map() -> HashMap<char, u16>{
+pub fn get_encoder_dict_map() -> HashMap<char, u16> {
     HashMap::from(DICTIONARY)
 }
 
@@ -149,7 +147,18 @@ mod test {
                 // idx 0
                 TrieNode {
                     letter: None,
-                    children: [Some(1), Some(2), Some(3), None, None, None, None, None, None, None]
+                    children: [
+                        Some(1),
+                        Some(2),
+                        Some(3),
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ],
                 },
                 // idx 1
                 TrieNode {
@@ -160,28 +169,36 @@ mod test {
                 TrieNode {
                     letter: Some('b'),
                     ..Default::default()
-
                 },
                 // idx 3
                 TrieNode {
                     letter: None,
-                    children: [None, None, None, Some(4), Some(5), None, None, None, None, None]
+                    children: [
+                        None,
+                        None,
+                        None,
+                        Some(4),
+                        Some(5),
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ],
                 },
                 // idx 4
                 TrieNode {
                     letter: Some('c'),
-                    children: [None, None, None, None, None, None, None, None, None, None]
+                    children: [None, None, None, None, None, None, None, None, None, None],
                 },
                 // idx 4
                 TrieNode {
                     letter: Some('d'),
-                    children: [None, None, None, None, None, None, None, None, None, None]
-                }
-            ]
+                    children: [None, None, None, None, None, None, None, None, None, None],
+                },
+            ],
         };
 
         assert_eq!(tree, correct_tree);
-
     }
-
 }

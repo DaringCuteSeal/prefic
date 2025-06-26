@@ -16,5 +16,5 @@ pub(crate) enum Command {
 
     /// Decipher an input string
     #[command()]
-    Decipher
+    Decipher,
 }

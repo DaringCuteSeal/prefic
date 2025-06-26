@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::{errors::{AppError, AppResult}, words::Trie};
+use crate::{
+    errors::{AppError, AppResult},
+    words::Trie,
+};
 
 // why am i so OOP patterned™
 // TODO: idk if borrowed fields is a good idea since this Matcher would stand alone anyways
@@ -8,7 +11,7 @@ use crate::{errors::{AppError, AppResult}, words::Trie};
 pub(crate) struct Matcher<'a> {
     /// Prefix tree of the dictionary
     trie: &'a Trie,
-    reverse_dict: &'a HashMap<char, u16>
+    reverse_dict: &'a HashMap<char, u16>,
 }
 
 impl<'a> Matcher<'a> {
@@ -31,7 +34,7 @@ impl<'a> Matcher<'a> {
             let n = if let Some(n) = c.to_digit(10) {
                 n as usize
             } else {
-                return Err(AppError::ParseError("Invalid character found!".into()))
+                return Err(AppError::ParseError("Invalid character found!".into()));
             };
 
             // traverse
@@ -41,8 +44,7 @@ impl<'a> Matcher<'a> {
                 // if we're still somehow traversing then there's something seriously wrong going
                 // on with the trie (unlikely) or the user input. It's 99% not our fault so like
                 // just blame the user I guess lol
-                return Err(AppError::ParseError("Invalid sequence found!".into()))
-                
+                return Err(AppError::ParseError("Invalid sequence found!".into()));
             }
             // this is a leaf!
             if let Some(c) = self.trie.nodes[idx].letter {
@@ -50,29 +52,29 @@ impl<'a> Matcher<'a> {
                 // reset (go to root again)
                 idx = 0;
             }
-        };
+        }
         Ok(result)
     }
-    
+
     pub fn cipher(&self, input: &str) -> AppResult<String> {
         let mut result = String::new();
         for c in input.chars() {
             if let Some(num) = self.reverse_dict.get(&c) {
                 result.push_str(&num.to_string())
             } else {
-                return Err(AppError::ParseError("Character outside defined codes found!".into()))
+                return Err(AppError::ParseError(
+                    "Character outside defined codes found!".into(),
+                ));
             }
         }
         Ok(result)
-
     }
-
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::words::{get_encoder_dict_map, Trie, DICTIONARY};
     use super::Matcher;
+    use crate::words::{get_encoder_dict_map, Trie, DICTIONARY};
 
     #[test]
     fn check_cipher() {
