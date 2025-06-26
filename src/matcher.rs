@@ -23,6 +23,10 @@ impl<'a> Matcher<'a> {
         let mut result = String::new();
         let mut idx: usize = 0; // the index of node we're in rn. initially set to the root
         for c in input.chars() {
+            if c == '\n' || c == ' ' {
+                continue;
+            }
+
             // convert the character to a digit
             let n = if let Some(n) = c.to_digit(10) {
                 n as usize
